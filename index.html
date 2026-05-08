@@ -416,6 +416,52 @@ select:focus { border-color: var(--ink); }
   white-space: nowrap;
   letter-spacing: 0.04em;
 }
+
+/* ── Accordion ── */
+.accordion { display: flex; flex-direction: column; gap: 6px; }
+.accordion-item { border: 1px solid var(--border); border-radius: 3px; overflow: hidden; }
+.accordion-trigger {
+  width: 100%;
+  background: var(--cream);
+  border: none;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  font-family: 'Lora', serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--ink);
+  text-align: left;
+  transition: background 0.15s;
+  border-radius: 0;
+}
+.accordion-trigger:hover { background: #e4dfd2; }
+.accordion-trigger.open { background: var(--ink); color: var(--paper); }
+.accordion-trigger.open .chevron { transform: rotate(180deg); filter: invert(1); }
+.chevron {
+  width: 16px; height: 16px;
+  flex-shrink: 0;
+  transition: transform 0.2s;
+  opacity: 0.6;
+}
+.accordion-body {
+  display: none;
+  padding: 14px 18px;
+  font-size: 0.87rem;
+  line-height: 1.75;
+  color: #333;
+  background: white;
+  border-top: 1px solid var(--border);
+}
+.accordion-body.open { display: block; }
+.accordion-body ul { padding-left: 18px; display: flex; flex-direction: column; gap: 4px; margin-top: 4px; }
+.accordion-body li { color: #444; }
+.accordion-body p { margin-bottom: 6px; }
+.accordion-body p:last-child { margin-bottom: 0; }
+.accordion-body strong { color: var(--ink); }
+.not-found { color: var(--muted); font-style: italic; }
 </style>
 </head>
 <body>
@@ -423,7 +469,7 @@ select:focus { border-color: var(--ink); }
 <header>
   <div>
     <h1>Handbook Assistant</h1>
-    <div class="subtitle">District Policy · Q&amp;A Tool · v1.01</div>
+    <div class="subtitle">District Policy · Q&amp;A Tool · v1.02</div>
   </div>
   <div id="doc-status">No document loaded</div>
 </header>
@@ -608,37 +654,41 @@ async function generateSummary() {
   summaryPanel.style.display = 'block';
   summaryPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-  const prompt = `You are reviewing a district employee handbook. Provide a structured summary that helps teachers quickly understand the most important information.
-
-Format your response using these exact section headers (use ### for each):
+  const prompt = `You are reviewing a district employee handbook. Provide a structured summary for teachers. Use exactly these section headers (### for each). Be specific and concise under each. If a section has no relevant info, write "Not addressed in this handbook."
 
 ### Document Overview
-One or two sentences about what this handbook covers and who it applies to.
+One or two sentences: what this handbook covers and who it applies to.
 
 ### Key Policies at a Glance
-Bullet list of the 6–8 most important policies a teacher needs to know (attendance, technology use, dress code, mandated reporting, etc.).
+Bullet list of 6–8 must-know policies (attendance, technology, dress code, mandated reporting, etc.).
 
 ### Leave & Time Off
-Summarize sick leave, personal leave, FMLA, bereavement, and any other leave types — including how many days and how to request them.
+Sick leave, personal leave, FMLA, bereavement, and other leave — include number of days and how to request each.
 
-### Compensation & Benefits
-Key points about pay periods, mileage reimbursement, tax-sheltered annuities, and any notable benefits.
+### Health Benefits
+Health insurance options available (medical, dental, vision). Who is eligible, when coverage starts, and whether the district contributes to premiums. Note any HSA or FSA options.
+
+### Retirement Benefits
+- Is there a 403(b) plan? Can employees make their own contributions (self-funded)?
+- Is there a 457(b) plan available?
+- Does the district pay a longevity bonus? If so, what are the terms?
+- Is there any district-funded health insurance available after retirement?
+If any of these are not mentioned, say so explicitly.
 
 ### Conduct & Expectations
-Brief summary of professional conduct standards, technology/social media policies, and anything teachers are specifically prohibited from doing.
+Professional conduct standards, technology/social media policies, prohibited actions.
 
 ### Who to Contact / How to Report
-Important contacts, how to report absences, accidents, grievances, or harassment.
+Key contacts, how to report absences, accidents, grievances, or harassment.
 
-### Important Dates or Deadlines
-Any specific dates, deadlines, or timelines mentioned (contract dates, benefit enrollment windows, etc.). If none found, omit this section.
+### Important Dates & Deadlines
+Specific dates, deadlines, or enrollment windows mentioned. Omit this section if none found.
 
-Keep the tone plain and practical. Avoid legal jargon. Write for a teacher reading this on a busy morning.`;
+Keep the tone plain and practical. No legal jargon. Write for a teacher on a busy morning.`;
 
   try {
     const response = await callGemini(prompt, true);
-    const html = markdownToHtml(response);
-    summaryContent.innerHTML = html;
+    summaryContent.innerHTML = buildAccordion(response);
 
     // Show chat
     document.getElementById('chat-panel').style.display = 'block';
@@ -798,6 +848,77 @@ function resetTool() {
   document.getElementById('summary-content').innerHTML = '';
 
   window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ── Accordion builder ──
+function buildAccordion(text) {
+  // Split on ### headers
+  const sections = text.split(/^### /m).filter(s => s.trim());
+  if (sections.length === 0) return '<p>' + escapeHtml(text) + '</p>';
+
+  const icons = {
+    'Document Overview': '📋',
+    'Key Policies': '📌',
+    'Leave': '🗓️',
+    'Health Benefits': '🏥',
+    'Retirement': '🏦',
+    'Conduct': '✅',
+    'Who to Contact': '📞',
+    'Important Dates': '📅',
+  };
+
+  function getIcon(title) {
+    for (const [key, icon] of Object.entries(icons)) {
+      if (title.includes(key)) return icon + ' ';
+    }
+    return '📄 ';
+  }
+
+  let html = '<div class="accordion">';
+  sections.forEach((section, i) => {
+    const lines = section.split('\n');
+    const title = lines[0].trim();
+    const body = lines.slice(1).join('\n').trim();
+    const bodyHtml = simpleMarkdown(body);
+    const isFirst = i === 0;
+    html += `
+      <div class="accordion-item">
+        <button class="accordion-trigger${isFirst ? ' open' : ''}" onclick="toggleAccordion(this)">
+          <span>${getIcon(title)}${escapeHtml(title)}</span>
+          <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
+        </button>
+        <div class="accordion-body${isFirst ? ' open' : ''}">
+          ${bodyHtml}
+        </div>
+      </div>`;
+  });
+  html += '</div>';
+  return html;
+}
+
+function toggleAccordion(btn) {
+  const body = btn.nextElementSibling;
+  const isOpen = btn.classList.contains('open');
+  btn.classList.toggle('open', !isOpen);
+  body.classList.toggle('open', !isOpen);
+}
+
+function simpleMarkdown(text) {
+  if (!text) return '<p class="not-found">Not addressed in this handbook.</p>';
+  const escaped = text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  return escaped
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/^\s*[-•]\s+(.+)$/gm, '<li>$1</li>')
+    .replace(/(<li>[\s\S]*?<\/li>)/g, '<ul>$1</ul>')
+    .replace(/<\/ul>\s*<ul>/g, '')
+    .replace(/
+{2,}/g, '</p><p>')
+    .replace(/
+/g, '<br>')
+    .replace(/^([^<])/, '<p>$1')
+    .replace(/([^>])$/, '$1</p>');
 }
 
 // ── Utilities ──
