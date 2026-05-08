@@ -469,7 +469,7 @@ select:focus { border-color: var(--ink); }
 <header>
   <div>
     <h1>Handbook Assistant</h1>
-    <div class="subtitle">District Policy · Q&amp;A Tool · v1.02</div>
+    <div class="subtitle">District Policy · Q&amp;A Tool · v1.03</div>
   </div>
   <div id="doc-status">No document loaded</div>
 </header>
@@ -587,7 +587,12 @@ function saveKey() {
   apiKey = val;
   err.textContent = '';
   ok.textContent = '✓ Key saved. Now upload your handbook below.';
-  document.getElementById('drop-zone').classList.remove('disabled');
+  const dz = document.getElementById('drop-zone');
+  dz.classList.remove('disabled');
+  dz.style.pointerEvents = 'auto';
+  dz.style.opacity = '1';
+  dz.style.cursor = 'pointer';
+  document.getElementById('file-input').disabled = false;
   document.getElementById('api-key-input').value = '●'.repeat(12);
 }
 
