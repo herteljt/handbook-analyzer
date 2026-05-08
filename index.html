@@ -469,7 +469,7 @@ select:focus { border-color: var(--ink); }
 <header>
   <div>
     <h1>Handbook Assistant</h1>
-    <div class="subtitle">District Policy · Q&amp;A Tool · v1.03</div>
+    <div class="subtitle">District Policy · Q&amp;A Tool · v1.04</div>
   </div>
   <div id="doc-status">No document loaded</div>
 </header>
@@ -516,7 +516,7 @@ select:focus { border-color: var(--ink); }
       <h2>Upload Your District Handbook (PDF)</h2>
     </div>
     <div class="panel-body">
-      <div class="drop-zone disabled" id="drop-zone" onclick="document.getElementById('file-input').click()"
+      <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()"
         ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
         <input type="file" id="file-input" accept=".pdf" onchange="handleFileSelect(event)" />
         <div class="icon">📄</div>
@@ -524,6 +524,12 @@ select:focus { border-color: var(--ink); }
         <div class="sublabel">PDF only · Processed entirely in your browser</div>
       </div>
       <div id="upload-progress"></div>
+      <div style="margin-top:14px;">
+        <button class="btn-accent" id="analyze-btn" onclick="startAnalysis()" disabled style="width:100%;padding:13px;font-size:0.95rem;">
+          Analyze Handbook →
+        </button>
+        <div class="error-line" id="analyze-error"></div>
+      </div>
     </div>
   </div>
 
@@ -587,13 +593,8 @@ function saveKey() {
   apiKey = val;
   err.textContent = '';
   ok.textContent = '✓ Key saved. Now upload your handbook below.';
-  const dz = document.getElementById('drop-zone');
-  dz.classList.remove('disabled');
-  dz.style.pointerEvents = 'auto';
-  dz.style.opacity = '1';
-  dz.style.cursor = 'pointer';
-  document.getElementById('file-input').disabled = false;
   document.getElementById('api-key-input').value = '●'.repeat(12);
+  document.getElementById('analyze-btn').disabled = false;
 }
 
 // ── File handling ──
@@ -608,38 +609,56 @@ function handleDrop(e) {
   e.preventDefault();
   document.getElementById('drop-zone').classList.remove('drag-over');
   const file = e.dataTransfer.files[0];
-  if (file) processFile(file);
+  if (file) stageFile(file);
 }
 function handleFileSelect(e) {
   const file = e.target.files[0];
-  if (file) processFile(file);
+  if (file) stageFile(file);
 }
 
-function processFile(file) {
-  if (!file.name.endsWith('.pdf')) {
+let stagedFile = null;
+
+function stageFile(file) {
+  if (!file.name.toLowerCase().endsWith('.pdf')) {
     document.getElementById('upload-progress').textContent = 'Please upload a PDF file.';
     return;
   }
+  stagedFile = file;
+  document.getElementById('upload-progress').textContent = '✓ ' + file.name + ' ready.';
+  document.getElementById('drop-zone').querySelector('.label').innerHTML = '<strong>' + file.name + '</strong>';
+  document.getElementById('drop-zone').querySelector('.sublabel').textContent = 'Click to choose a different file';
+  if (apiKey) document.getElementById('analyze-btn').disabled = false;
+}
+
+function startAnalysis() {
+  const errEl = document.getElementById('analyze-error');
   if (!apiKey) {
-    document.getElementById('upload-progress').textContent = 'Set your API key first (Step 1).';
+    errEl.textContent = 'Paste your API key in Step 1 first.';
     return;
   }
+  if (!stagedFile) {
+    errEl.textContent = 'Upload a PDF file first.';
+    return;
+  }
+  errEl.textContent = '';
+  document.getElementById('analyze-btn').disabled = true;
+  document.getElementById('analyze-btn').textContent = 'Reading PDF…';
 
-  fileName = file.name.replace(/\.[^/.]+$/, '').replace(/_/g, ' ');
-  document.getElementById('upload-progress').textContent = 'Reading PDF…';
-
+  fileName = stagedFile.name.replace(/\.[^/.]+$/, '').replace(/_/g, ' ');
   const reader = new FileReader();
   reader.onload = (e) => {
     pdfBase64 = e.target.result.split(',')[1];
-    document.getElementById('upload-progress').textContent = '✓ PDF loaded. Generating summary…';
-    document.getElementById('doc-status').textContent = '📄 ' + file.name;
+    document.getElementById('doc-status').textContent = '📄 ' + stagedFile.name;
     document.getElementById('doc-status').classList.add('loaded');
+    document.getElementById('analyze-btn').textContent = 'Analyzing…';
     generateSummary();
   };
   reader.onerror = () => {
-    document.getElementById('upload-progress').textContent = 'Error reading file. Try again.';
+    errEl.textContent = 'Error reading file. Try again.';
+    document.getElementById('analyze-btn').disabled = false;
+    document.getElementById('analyze-btn').textContent = 'Analyze Handbook →';
   };
-  reader.readAsDataURL(file);
+  reader.readAsDataURL(stagedFile);
 }
 
 // ── Summary ──
