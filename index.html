@@ -420,7 +420,7 @@ button:disabled { opacity: 0.38; cursor: not-allowed; }
 <header>
   <div class="header-left">
     <h1>Handbook Analyzer</h1>
-    <div class="subtitle">Educator Finance Tools · v1.06</div>
+    <div class="subtitle">Educator Finance Tools · v1.08</div>
   </div>
   <div class="header-right">
     <div id="doc-status">No document loaded</div>
@@ -501,6 +501,17 @@ button:disabled { opacity: 0.38; cursor: not-allowed; }
     </div>
   </div>
 
+  <!-- Salary Detail -->
+  <div class="panel" id="salary-panel" style="display:none">
+    <div class="panel-header">
+      <span class="step-badge">SALARY</span>
+      <h2>Compensation Detail</h2>
+    </div>
+    <div class="panel-body">
+      <div id="salary-content"></div>
+    </div>
+  </div>
+
   <!-- Chat -->
   <div class="panel" id="chat-panel">
     <div class="panel-header">
@@ -515,6 +526,8 @@ button:disabled { opacity: 0.38; cursor: not-allowed; }
       <span class="chip" onclick="useChip(this)">What are my FMLA rights?</span>
       <span class="chip" onclick="useChip(this)">What 403(b) options are available?</span>
       <span class="chip" onclick="useChip(this)">Is there a longevity bonus?</span>
+      <span class="chip" onclick="useChip(this)">How does graduate education affect my pay?</span>
+      <span class="chip" onclick="useChip(this)">What extra duties come with additional pay?</span>
     </div>
     <div class="chat-input-area">
       <textarea id="user-input" placeholder="Ask anything about the handbook…" rows="1"
@@ -667,10 +680,11 @@ Sick leave, personal leave, FMLA, bereavement, and other leave — include numbe
 Health insurance options (medical, dental, vision). Who is eligible, when coverage starts, district premium contributions, HSA or FSA options.
 
 ### Retirement Benefits
-- Is there a 403(b) plan? Can employees make their own contributions?
-- Is there a 457(b) plan available?
+- Is there a 403(b) plan (also called a TSA or Tax Sheltered Annuity)? Can employees make their own voluntary contributions via payroll deduction? Are there pre-tax and Roth options?
+- Is there a 457(b) plan available (sometimes called the Wisconsin Deferred Compensation program or WDC)?
 - Does the district pay a longevity bonus? If so, what are the terms?
-- Is there any district-funded health insurance available after retirement?
+- Is there any district-funded health insurance or HRA (Health Reimbursement Arrangement) available after retirement?
+- Note: WRS refers to the Wisconsin Retirement System — the state pension plan that most Wisconsin public school teachers are automatically enrolled in. It is separate from any voluntary 403(b) or 457(b) plans.
 State explicitly if any of these are not mentioned.
 
 ### Conduct & Expectations
@@ -678,6 +692,14 @@ Professional conduct standards, technology/social media policies, prohibited act
 
 ### Who to Contact / How to Report
 Key contacts, how to report absences, accidents, grievances, or harassment.
+
+### Salary & Compensation
+Report everything the handbook says about salary. Include specific dollar amounts if present.
+- Whether a salary schedule exists and where to find it, OR the general statement used if no schedule is provided
+- Pay increases for graduate degrees — include exact dollar amounts or percentage increases if listed, and any pre-approval requirements (some districts require superintendent approval before starting a program)
+- Extra duty pay highlights — coaching, clubs, department chair, etc. Include amounts if a stipend schedule is in the handbook
+- Step increases or longevity pay
+If specific dollar amounts are not in the handbook, say so and note what document would contain them (e.g. "Salary schedules are typically in the master contract or a separate schedule — ask your HR department").
 
 ### Important Dates & Deadlines
 Specific dates, deadlines, or enrollment windows. Omit this section if none found.
@@ -693,11 +715,60 @@ Keep the tone plain and practical. No legal jargon.`;
     document.getElementById('reset-row').style.display = 'flex';
     addMessage('assistant', 'Summary is ready above. Ask me anything about the handbook.');
     document.getElementById('chat-panel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    generateSalaryDetail();
   } catch (err) {
     content.innerHTML = `<p style="color:var(--accent);font-size:.87rem">Error: ${esc(err.message)}</p>`;
     const btn = document.getElementById('analyze-btn');
     btn.disabled    = false;
     btn.textContent = 'Try Again →';
+  }
+}
+
+// ── Salary Detail ──
+async function generateSalaryDetail() {
+  const panel   = document.getElementById('salary-panel');
+  const content = document.getElementById('salary-content');
+
+  panel.style.display = 'block';
+  content.innerHTML = `<div class="thinking-row"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>Analyzing compensation details…</div>`;
+
+  const prompt = `You are reviewing a district employee handbook. Extract all compensation-related information in detail. Use these exact section headers (### for each).
+
+### Base Salary
+Does the handbook include a salary schedule with specific dollar amounts? If yes, summarize it — include starting salary, top of scale, and how many steps. If not, quote or paraphrase exactly what the handbook says about how salaries are determined (even vague language like "based on market competitiveness, experience, and performance" is worth capturing). Note that actual salary figures are typically in a separate salary schedule or master contract if not found here — suggest the teacher ask HR.
+
+### Graduate Education & Lane Changes
+Does completing a master's degree, specialist degree, additional graduate credits, or a doctorate increase pay? 
+- Include the exact dollar amount of any increase (e.g. "$3,000 base salary increase")
+- Note any pre-approval requirements — some districts require superintendent or administrator approval BEFORE starting the degree program. If this requirement exists, flag it clearly as it is easy to miss and can disqualify the pay increase.
+- Note whether the degree must be in the teacher's licensure area or if other fields are accepted
+- List any forms the teacher needs to complete (e.g. a pre-approval form)
+If not mentioned, say so clearly.
+
+### Extra Duty Pay
+List every role, assignment, or duty that comes with additional compensation. Include specific dollar amounts wherever they appear in the handbook — coaching stipends, club advising, department chair, curriculum work, mentoring, summer work, after-school programs, etc. If a multi-level stipend schedule exists (e.g. different amounts by years of experience), summarize the range. If amounts are not in the handbook, note where they are typically found.
+
+### Step Increases & Experience
+How does experience affect pay? Are there annual step increases? Is there a max number of steps? Any freeze, delay, or earning conditions mentioned? If the handbook is silent on this, say so and note that step schedules are typically in the master contract.
+
+### Wisconsin Retirement System (WRS)
+Note: WRS is the Wisconsin state pension — most Wisconsin public school teachers are automatically enrolled. It is NOT optional in the way a 403(b) or 457(b) is.
+- What does the handbook say about WRS contributions? Does the district pay the employer share? Does the employee pay their own share?
+- Is there a 403(b) plan (Tax Sheltered Annuity / TSA)? Are contributions voluntary and employee-funded via payroll deduction? Are both pre-tax and Roth options available?
+- Is there a 457(b) plan (often the Wisconsin Deferred Compensation / WDC program)? Is it voluntary?
+- Is there an unused leave payout at retirement? If so, what are the terms?
+- Is there any district-funded health benefit available after retirement (e.g. HRA POP — Health Reimbursement Arrangement)?
+
+### Other Compensation
+Anything else compensation-related: mileage reimbursement rates, meal reimbursement limits, signing bonuses, no-absence bonuses, tuition reimbursement, or any other payments. Include specific dollar amounts where present.
+
+For each section: if the information is not in the handbook, say so explicitly and note where the teacher would typically find it. Be specific — include dollar amounts and quote the handbook directly where possible.`;
+
+  try {
+    const response = await callGemini(prompt);
+    content.innerHTML = buildAccordion(response);
+  } catch (err) {
+    content.innerHTML = `<p style="color:var(--accent);font-size:.87rem">Error loading salary detail: ${esc(err.message)}</p>`;
   }
 }
 
@@ -791,6 +862,7 @@ function resetTool() {
   isThinking  = false;
 
   document.getElementById('summary-panel').style.display = 'none';
+  document.getElementById('salary-panel').style.display  = 'none';
   document.getElementById('chat-panel').style.display    = 'none';
   document.getElementById('reset-row').style.display     = 'none';
   document.getElementById('messages').innerHTML          = '';
