@@ -420,7 +420,7 @@ button:disabled { opacity: 0.38; cursor: not-allowed; }
 <header>
   <div class="header-left">
     <h1>Handbook Analyzer</h1>
-    <div class="subtitle">Educator Finance Tools · v1.05</div>
+    <div class="subtitle">Educator Finance Tools · v1.06</div>
   </div>
   <div class="header-right">
     <div id="doc-status">No document loaded</div>
@@ -552,11 +552,7 @@ function saveKey() {
     errEl.textContent = 'Please paste your API key.';
     return;
   }
-  if (!val.startsWith('AIza')) {
-    errEl.textContent = 'Key should start with "AIza". Copy it directly from Google AI Studio.';
-    return;
-  }
-  if (val.length < 20) {
+  if (val.length < 10) {
     errEl.textContent = 'That key looks too short — make sure you copied the full key.';
     return;
   }
