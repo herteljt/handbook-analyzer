@@ -420,7 +420,7 @@ button:disabled { opacity: 0.38; cursor: not-allowed; }
 <header>
   <div class="header-left">
     <h1>Handbook Analyzer</h1>
-    <div class="subtitle">Educator Finance Tools · v1.09</div>
+    <div class="subtitle">Educator Finance Tools · v1.10</div>
   </div>
   <div class="header-right">
     <div id="doc-status">No document loaded</div>
@@ -847,30 +847,43 @@ function removeThinking(id) {
 
 // ── Reset ──
 function resetTool() {
-  apiKey = pdfBase64 = fileName = '';
+  // Preserve apiKey — teacher shouldn't have to re-enter it
+  pdfBase64 = '';
+  fileName  = '';
   stagedFile = null;
   chatHistory = [];
   isThinking  = false;
 
+  // Clear panel contents so stale results don't linger
+  document.getElementById('summary-content').innerHTML  = '';
+  document.getElementById('salary-content').innerHTML   = '';
+  document.getElementById('messages').innerHTML         = '';
+
+  // Hide result panels
   document.getElementById('summary-panel').style.display = 'none';
   document.getElementById('salary-panel').style.display  = 'none';
   document.getElementById('chat-panel').style.display    = 'none';
   document.getElementById('reset-row').style.display     = 'none';
-  document.getElementById('messages').innerHTML          = '';
+
+  // Reset chat
   document.getElementById('suggestions').style.display  = 'flex';
   document.getElementById('send-btn').disabled          = true;
+
+  // Reset analyze button
   document.getElementById('analyze-btn').disabled       = true;
   document.getElementById('analyze-btn').textContent    = 'Analyze Handbook →';
   document.getElementById('analyze-error').textContent  = '';
+
+  // Reset upload area
   document.getElementById('upload-error').textContent   = '';
-  document.getElementById('key-success').textContent    = '';
-  document.getElementById('key-error').textContent      = '';
-  document.getElementById('api-key-input').value        = '';
   document.getElementById('file-input').value           = '';
   document.getElementById('dz-label').innerHTML         = '<strong>Click to upload</strong> or drag and drop';
   document.getElementById('dz-sub').textContent         = 'PDF only · Processed entirely in your browser';
+
+  // Reset header status
   document.getElementById('doc-status').textContent     = 'No document loaded';
   document.getElementById('doc-status').classList.remove('loaded');
+
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
