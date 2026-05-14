@@ -420,7 +420,7 @@ button:disabled { opacity: 0.38; cursor: not-allowed; }
 <header>
   <div class="header-left">
     <h1>Handbook Analyzer</h1>
-    <div class="subtitle">Educator Finance Tools · v1.08</div>
+    <div class="subtitle">Educator Finance Tools · v1.09</div>
   </div>
   <div class="header-right">
     <div id="doc-status">No document loaded</div>
@@ -665,41 +665,32 @@ async function generateSummary() {
   panel.style.display = 'block';
   panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-  const prompt = `You are reviewing a district employee handbook. Provide a structured summary for teachers. Use exactly these section headers (### for each). Be specific and concise. If a section has no relevant info, write "Not addressed in this handbook."
+  const prompt = `You are reviewing a district employee handbook. Provide a structured summary for teachers. Use exactly these section headers (### for each), in this exact order. Be specific and concise. If a section has no relevant info, write "Not addressed in this handbook."
 
 ### Document Overview
-One or two sentences: what this handbook covers and who it applies to.
+One or two sentences: what this handbook covers and who it applies to. Include the handbook year or date if it appears anywhere in the document (cover page, approval date, revision date, footer, etc.).
 
-### Key Policies at a Glance
-Bullet list of 6–8 must-know policies (attendance, technology, dress code, mandated reporting, etc.).
+### Salary & Compensation
+Report everything the handbook says about salary. Include specific dollar amounts if present.
+- Whether a salary schedule exists and where to find it, OR quote the general statement used if no schedule is provided
+- Pay increases for graduate degrees — include exact dollar amounts if listed, and flag any pre-approval requirements (some districts require administrator approval BEFORE starting the program — missing this can disqualify the raise)
+- Extra duty pay highlights — coaching, clubs, department chair, etc. Include amounts if a stipend schedule is in the handbook
+- Step increases or longevity pay
+If specific dollar amounts are not in the handbook, say so and note what document would contain them.
+
+### Health Benefits
+Health insurance options (medical, dental, vision). Who is eligible (minimum FTE required), when coverage starts, what percentage the district pays, and any FSA, HRA, or cash-in-lieu options.
 
 ### Leave & Time Off
 Sick leave, personal leave, FMLA, bereavement, and other leave — include number of days and how to request each.
 
-### Health Benefits
-Health insurance options (medical, dental, vision). Who is eligible, when coverage starts, district premium contributions, HSA or FSA options.
-
 ### Retirement Benefits
-- Is there a 403(b) plan (also called a TSA or Tax Sheltered Annuity)? Can employees make their own voluntary contributions via payroll deduction? Are there pre-tax and Roth options?
-- Is there a 457(b) plan available (sometimes called the Wisconsin Deferred Compensation program or WDC)?
+- Is there a 403(b) plan (also called a TSA or Tax Sheltered Annuity)? Can employees make voluntary contributions via payroll deduction? Are pre-tax and Roth options available?
+- Is there a 457(b) plan (sometimes called the Wisconsin Deferred Compensation program or WDC)?
 - Does the district pay a longevity bonus? If so, what are the terms?
-- Is there any district-funded health insurance or HRA (Health Reimbursement Arrangement) available after retirement?
-- Note: WRS refers to the Wisconsin Retirement System — the state pension plan that most Wisconsin public school teachers are automatically enrolled in. It is separate from any voluntary 403(b) or 457(b) plans.
+- Is there any district-funded health benefit or HRA available after retirement?
+- Note: WRS (Wisconsin Retirement System) is the state pension — most Wisconsin public school teachers are automatically enrolled. It is separate from voluntary 403(b) or 457(b) plans.
 State explicitly if any of these are not mentioned.
-
-### Conduct & Expectations
-Professional conduct standards, technology/social media policies, prohibited actions.
-
-### Who to Contact / How to Report
-Key contacts, how to report absences, accidents, grievances, or harassment.
-
-### Salary & Compensation
-Report everything the handbook says about salary. Include specific dollar amounts if present.
-- Whether a salary schedule exists and where to find it, OR the general statement used if no schedule is provided
-- Pay increases for graduate degrees — include exact dollar amounts or percentage increases if listed, and any pre-approval requirements (some districts require superintendent approval before starting a program)
-- Extra duty pay highlights — coaching, clubs, department chair, etc. Include amounts if a stipend schedule is in the handbook
-- Step increases or longevity pay
-If specific dollar amounts are not in the handbook, say so and note what document would contain them (e.g. "Salary schedules are typically in the master contract or a separate schedule — ask your HR department").
 
 ### Important Dates & Deadlines
 Specific dates, deadlines, or enrollment windows. Omit this section if none found.
@@ -911,12 +902,10 @@ function buildAccordion(text) {
 
   const icons = {
     'Document':    '📋',
-    'Key Policies':'📌',
-    'Leave':       '🗓️',
+    'Salary':      '💰',
     'Health':      '🏥',
+    'Leave':       '🗓️',
     'Retirement':  '🏦',
-    'Conduct':     '✅',
-    'Contact':     '📞',
     'Dates':       '📅',
   };
   function getIcon(t) {
