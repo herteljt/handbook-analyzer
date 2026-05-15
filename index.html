@@ -420,7 +420,7 @@ button:disabled { opacity: 0.38; cursor: not-allowed; }
 <header>
   <div class="header-left">
     <h1>Handbook Analyzer</h1>
-    <div class="subtitle">Educator Finance Tools · v1.10</div>
+    <div class="subtitle">Educator Finance Tools · v1.11</div>
   </div>
   <div class="header-right">
     <div id="doc-status">No document loaded</div>
@@ -695,6 +695,37 @@ State explicitly if any of these are not mentioned.
 ### Important Dates & Deadlines
 Specific dates, deadlines, or enrollment windows. Omit this section if none found.
 
+### What's Notable
+Flag items that are unusual, specific, or financially significant — things a teacher would be glad to know and might not find in a typical handbook. Look for:
+- Specific dollar amounts for anything (salary increases, stipends, bonuses, payouts)
+- A no-absence bonus
+- Unused leave payout at retirement — include rates and years-of-service thresholds
+- Pre-approval requirements for graduate degree pay increases
+- Cash-in-lieu of health insurance option
+- District HRA contributions (quarterly deposits, etc.)
+- Post-retirement health benefits of any kind
+- 457(b) / deferred compensation availability
+- Liquidated damages for late resignation (penalties if a teacher resigns after a certain date)
+- Any other policy that is specific, concrete, or financially meaningful
+Format as a bullet list. If nothing notable is found, write "Nothing unusual found — this handbook covers standard topics at a typical level of detail."
+
+### What's Missing
+Check for the following items that are typically found in district handbooks. List any that are NOT addressed or are only vaguely referenced without useful detail:
+- Sick leave (number of days)
+- Personal leave (number of days)
+- FMLA rights
+- Grievance procedure
+- Salary schedule or clear salary determination policy
+- 403(b) / tax-sheltered annuity option
+- Health insurance (medical)
+- Dental insurance
+- Vision insurance
+- Mandated reporting policy
+- Technology / acceptable use policy
+- Attendance and absence reporting procedure
+- Evaluation process
+Format as a bullet list of what's missing or vague. If everything is covered, write "This handbook addresses all standard topics."
+
 Keep the tone plain and practical. No legal jargon.`;
 
   try {
@@ -920,6 +951,8 @@ function buildAccordion(text) {
     'Leave':       '🗓️',
     'Retirement':  '🏦',
     'Dates':       '📅',
+    'Notable':     '⭐',
+    'Missing':     '⚠️',
   };
   function getIcon(t) {
     for (const [k, v] of Object.entries(icons)) if (t.includes(k)) return v + ' ';
